@@ -25,7 +25,8 @@ const gameState = {
     gameOver: false,
     timerInterval: null,
     timeRemaining: 0,
-    customTimeLimit: 15  // User-defined time limit for zamanlı mode
+    customTimeLimit: 15,  // User-defined time limit for zamanlı mode
+    scores: { 1: 0, 2: 0 }  // Player scores
 };
 
 // DOM elements
@@ -47,6 +48,8 @@ const modeTabs = document.querySelectorAll('.mode-tab');
 const timeLimitModal = document.getElementById('time-limit-modal');
 const timeLimitInput = document.getElementById('time-limit-input');
 const timeLimitConfirmBtn = document.getElementById('time-limit-confirm');
+const scoreP1Display = document.getElementById('score-p1');
+const scoreP2Display = document.getElementById('score-p2');
 
 // Initialize game
 function init() {
@@ -214,7 +217,7 @@ function handleTimeUp() {
 
     // End the game when time runs out
     setTimeout(() => {
-        endGame(`Oyuncu ${gameState.currentPlayer} süreyi aştı!`);
+        endGame(true);
     }, 1500);
 }
 
@@ -258,9 +261,11 @@ function handleSubmit() {
         return;
     }
 
-    // Valid word - stop timer and add to history
+    // Valid word - stop timer, add points, and add to history
     stopTimer();
-    addWordToHistory(correctSpelling || word);
+    const finalWord = correctSpelling || word;
+    addPoints(gameState.currentPlayer, finalWord);
+    addWordToHistory(finalWord);
 
     // Show spelling note if different
     if (correctSpelling && hasSpellingDifference(word, correctSpelling)) {
@@ -268,7 +273,6 @@ function handleSubmit() {
     }
 
     // Update game state (use correct spelling for last letter)
-    const finalWord = correctSpelling || word;
     gameState.lastLetter = finalWord[finalWord.length - 1];
     gameState.turnsInRound++;
 
@@ -281,7 +285,7 @@ function handleSubmit() {
 
         // Check if game is complete
         if (gameState.round > config.rounds) {
-            endGame('Tebrikler! Oyunu başarıyla tamamladınız!');
+            endGame();
             return;
         }
     }
@@ -363,15 +367,46 @@ function showMessage(text, type) {
     }
 }
 
+// Update score display
+function updateScoreDisplay() {
+    scoreP1Display.textContent = gameState.scores[1];
+    scoreP2Display.textContent = gameState.scores[2];
+}
+
+// Add points for a word
+function addPoints(player, word) {
+    const points = word.length;
+    gameState.scores[player] += points;
+    updateScoreDisplay();
+}
+
 // End game
-function endGame(message) {
+function endGame(isTimeout = false) {
     stopTimer();
     gameState.gameOver = true;
+
+    // Determine winner based on scores
+    const s1 = gameState.scores[1];
+    const s2 = gameState.scores[2];
+    let winnerMessage;
+
+    if (isTimeout) {
+        // Current player lost due to timeout, other player wins
+        const loser = gameState.currentPlayer;
+        const winner = loser === 1 ? 2 : 1;
+        winnerMessage = `Oyuncu ${winner} kazandı! (Süre doldu) - Skor: ${s1} - ${s2}`;
+    } else if (s1 > s2) {
+        winnerMessage = `Oyuncu 1 kazandı! (${s1} - ${s2})`;
+    } else if (s2 > s1) {
+        winnerMessage = `Oyuncu 2 kazandı! (${s2} - ${s1})`;
+    } else {
+        winnerMessage = `Berabere! (${s1} - ${s2})`;
+    }
 
     // Update game over message
     const gameOverMessage = gameOverScreen.querySelector('p');
     if (gameOverMessage) {
-        gameOverMessage.textContent = message || 'Oyun bitti!';
+        gameOverMessage.textContent = winnerMessage;
     }
 
     gameOverScreen.classList.remove('hidden');
@@ -421,6 +456,7 @@ function startNewGame() {
     gameState.wordHistory = [];
     gameState.turnsInRound = 0;
     gameState.gameOver = false;
+    gameState.scores = { 1: 0, 2: 0 };
 
     wordHistoryList.innerHTML = '';
     gameOverScreen.classList.add('hidden');
@@ -428,6 +464,7 @@ function startNewGame() {
     messageDiv.className = 'message';
     spellingNoteDiv.innerHTML = '';
     wordInput.value = '';
+    updateScoreDisplay();
 
     // Pick a random starting word
     const startingWord = getRandomStartingWord();

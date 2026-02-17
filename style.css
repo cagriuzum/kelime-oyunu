@@ -58,6 +58,61 @@ h1 {
     border-color: transparent;
 }
 
+.scoreboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+}
+
+.score {
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    min-width: 100px;
+}
+
+.player-1-score {
+    background: rgba(102, 126, 234, 0.15);
+    border: 2px solid #667eea;
+}
+
+.player-2-score {
+    background: rgba(118, 75, 162, 0.15);
+    border: 2px solid #764ba2;
+}
+
+.score-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.score-value {
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.player-1-score .score-value {
+    color: #667eea;
+}
+
+.player-2-score .score-value {
+    color: #764ba2;
+}
+
+.score-divider {
+    font-size: 14px;
+    color: #999;
+    font-weight: bold;
+}
+
 .game-info {
     display: flex;
     justify-content: center;
