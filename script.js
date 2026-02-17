@@ -50,6 +50,11 @@ const timeLimitConfirmBtn = document.getElementById('time-limit-confirm');
 
 // Initialize game
 function init() {
+    // Pick starting word and set up initial state
+    const startingWord = getRandomStartingWord();
+    addStartingWord(startingWord);
+    gameState.lastLetter = startingWord[startingWord.length - 1];
+
     updateDisplay();
     wordInput.focus();
 
@@ -382,13 +387,37 @@ function restartGame() {
     }
 }
 
+// Pick a random starting word from the dictionary
+function getRandomStartingWord() {
+    const wordsArray = Array.from(TURKISH_WORDS);
+    // Filter words between 4-8 characters for good starting words
+    const goodWords = wordsArray.filter(w => w.length >= 4 && w.length <= 8);
+    const randomIndex = Math.floor(Math.random() * goodWords.length);
+    return goodWords[randomIndex];
+}
+
+// Add the starting word to history (from "Oyun")
+function addStartingWord(word) {
+    gameState.wordHistory.push({
+        word: word,
+        player: 0  // 0 = system
+    });
+
+    const li = document.createElement('li');
+    li.className = 'player-system';
+    li.innerHTML = `
+        <span class="word">${word}</span>
+        <span class="player">Oyun</span>
+    `;
+    wordHistoryList.appendChild(li);
+}
+
 // Internal restart (after time limit is set)
 function startNewGame() {
     stopTimer();
 
     gameState.currentPlayer = 1;
     gameState.round = 1;
-    gameState.lastLetter = null;
     gameState.wordHistory = [];
     gameState.turnsInRound = 0;
     gameState.gameOver = false;
@@ -399,6 +428,11 @@ function startNewGame() {
     messageDiv.className = 'message';
     spellingNoteDiv.innerHTML = '';
     wordInput.value = '';
+
+    // Pick a random starting word
+    const startingWord = getRandomStartingWord();
+    addStartingWord(startingWord);
+    gameState.lastLetter = startingWord[startingWord.length - 1];
 
     updateDisplay();
     wordInput.focus();

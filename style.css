@@ -249,6 +249,11 @@ h1 {
     border-left: 3px solid #764ba2;
 }
 
+#word-history li.player-system {
+    border-left: 3px solid #4caf50;
+    background: #e8f5e9;
+}
+
 .game-over {
     position: fixed;
     top: 0;
