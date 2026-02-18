@@ -26,7 +26,8 @@ const gameState = {
     timerInterval: null,
     timeRemaining: 0,
     customTimeLimit: 15,  // User-defined time limit for zamanlı mode
-    scores: { 1: 0, 2: 0 }  // Player scores
+    scores: { 1: 0, 2: 0 },  // Player scores
+    playerNames: { 1: 'Oyuncu 1', 2: 'Oyuncu 2' }  // Player names
 };
 
 // DOM elements
@@ -50,16 +51,17 @@ const timeLimitInput = document.getElementById('time-limit-input');
 const timeLimitConfirmBtn = document.getElementById('time-limit-confirm');
 const scoreP1Display = document.getElementById('score-p1');
 const scoreP2Display = document.getElementById('score-p2');
+const playerNamesModal = document.getElementById('player-names-modal');
+const player1NameInput = document.getElementById('player1-name');
+const player2NameInput = document.getElementById('player2-name');
+const namesConfirmBtn = document.getElementById('names-confirm');
+const scoreP1Label = document.querySelector('.player-1-score .score-label');
+const scoreP2Label = document.querySelector('.player-2-score .score-label');
 
 // Initialize game
 function init() {
-    // Pick starting word and set up initial state
-    const startingWord = getRandomStartingWord();
-    addStartingWord(startingWord);
-    gameState.lastLetter = startingWord[startingWord.length - 1];
-
-    updateDisplay();
-    wordInput.focus();
+    // Show player names modal first
+    player1NameInput.focus();
 
     submitBtn.addEventListener('click', handleSubmit);
     wordInput.addEventListener('keypress', (e) => {
@@ -86,6 +88,42 @@ function init() {
             confirmTimeLimit();
         }
     });
+
+    // Player names modal listeners
+    namesConfirmBtn.addEventListener('click', confirmPlayerNames);
+    player1NameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            player2NameInput.focus();
+        }
+    });
+    player2NameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmPlayerNames();
+        }
+    });
+}
+
+// Confirm player names and start game
+function confirmPlayerNames() {
+    const name1 = player1NameInput.value.trim() || 'Oyuncu 1';
+    const name2 = player2NameInput.value.trim() || 'Oyuncu 2';
+
+    gameState.playerNames[1] = name1;
+    gameState.playerNames[2] = name2;
+
+    // Update scoreboard labels
+    scoreP1Label.textContent = name1;
+    scoreP2Label.textContent = name2;
+
+    playerNamesModal.classList.add('hidden');
+
+    // Now start the game
+    const startingWord = getRandomStartingWord();
+    addStartingWord(startingWord);
+    gameState.lastLetter = startingWord[startingWord.length - 1];
+
+    updateDisplay();
+    wordInput.focus();
 }
 
 // Switch game mode
@@ -213,7 +251,7 @@ function updateTimerDisplay() {
 
 function handleTimeUp() {
     stopTimer();
-    showMessage(`Süre doldu! Oyuncu ${gameState.currentPlayer} kaybetti.`, 'error');
+    showMessage(`Süre doldu! ${gameState.playerNames[gameState.currentPlayer]} kaybetti.`, 'error');
 
     // End the game when time runs out
     setTimeout(() => {
@@ -314,7 +352,7 @@ function addWordToHistory(word) {
     li.className = `player-${gameState.currentPlayer}`;
     li.innerHTML = `
         <span class="word">${word}</span>
-        <span class="player">Oyuncu ${gameState.currentPlayer}</span>
+        <span class="player">${gameState.playerNames[gameState.currentPlayer]}</span>
     `;
 
     // Add to top of list
@@ -331,7 +369,7 @@ function updateDisplay() {
 
     roundDisplay.textContent = Math.min(gameState.round, config.rounds);
     maxRoundsDisplay.textContent = config.rounds;
-    currentPlayerDisplay.textContent = `Oyuncu ${gameState.currentPlayer}`;
+    currentPlayerDisplay.textContent = gameState.playerNames[gameState.currentPlayer];
 
     // Show/hide timer based on mode
     if (config.timeLimit) {
@@ -388,17 +426,19 @@ function endGame(isTimeout = false) {
     // Determine winner based on scores
     const s1 = gameState.scores[1];
     const s2 = gameState.scores[2];
+    const name1 = gameState.playerNames[1];
+    const name2 = gameState.playerNames[2];
     let winnerMessage;
 
     if (isTimeout) {
         // Current player lost due to timeout, other player wins
         const loser = gameState.currentPlayer;
         const winner = loser === 1 ? 2 : 1;
-        winnerMessage = `Oyuncu ${winner} kazandı! (Süre doldu) - Skor: ${s1} - ${s2}`;
+        winnerMessage = `${gameState.playerNames[winner]} kazandı! (Süre doldu) - Skor: ${s1} - ${s2}`;
     } else if (s1 > s2) {
-        winnerMessage = `Oyuncu 1 kazandı! (${s1} - ${s2})`;
+        winnerMessage = `${name1} kazandı! (${s1} - ${s2})`;
     } else if (s2 > s1) {
-        winnerMessage = `Oyuncu 2 kazandı! (${s2} - ${s1})`;
+        winnerMessage = `${name2} kazandı! (${s2} - ${s1})`;
     } else {
         winnerMessage = `Berabere! (${s1} - ${s2})`;
     }
@@ -465,6 +505,10 @@ function startNewGame() {
     spellingNoteDiv.innerHTML = '';
     wordInput.value = '';
     updateScoreDisplay();
+
+    // Update scoreboard labels with player names
+    scoreP1Label.textContent = gameState.playerNames[1];
+    scoreP2Label.textContent = gameState.playerNames[2];
 
     // Pick a random starting word
     const startingWord = getRandomStartingWord();

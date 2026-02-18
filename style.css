@@ -396,6 +396,32 @@ h1 {
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.name-input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.name-input-group label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.name-input-group input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    text-align: left;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+}
+
+.name-input-group input:focus {
+    border-color: #667eea;
+}
+
 .hidden {
     display: none !important;
 }
